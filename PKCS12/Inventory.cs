@@ -23,7 +23,7 @@ using Org.BouncyCastle.Pkcs;
 
 using Microsoft.Web.Administration;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12
+namespace Keyfactor.Extensions.Orchestrator.PKCS12
 {
     public class Inventory : LoggingClientBase, IAgentJobExtension
     {
@@ -39,7 +39,7 @@ namespace Keyfactor.Integration.Orchestrator.PKCS12
 
         public AnyJobCompleteInfo processJob(AnyJobConfigInfo config, SubmitInventoryUpdate submitInventory, SubmitEnrollmentRequest submitEnrollmentRequest, SubmitDiscoveryResults sdr)
         {
-            Logger.Debug($"Begin Inventory...");
+            Logger.Debug($"Begin PKCS12 Inventory job for job id {config.Job.JobId}...");
 
             PKCS12Store pkcs12Store = new PKCS12Store(config.Store.ClientMachine, config.Server.Username, config.Server.Password, config.Store.StorePath, config.Store.StorePassword);
 

@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 
 using Org.BouncyCastle.Pkcs;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12
+namespace Keyfactor.Extensions.Orchestrator.PKCS12
 {
     public class Management : LoggingClientBase, IAgentJobExtension
     {
@@ -36,12 +36,9 @@ namespace Keyfactor.Integration.Orchestrator.PKCS12
 
         public AnyJobCompleteInfo processJob(AnyJobConfigInfo config, SubmitInventoryUpdate submitInventory, SubmitEnrollmentRequest submitEnrollmentRequest, SubmitDiscoveryResults sdr)
         {
-            Logger.Debug($"Begin Management...");
+            Logger.Debug($"Begin PKCS12 Management-{Enum.GetName(typeof(AnyJobOperationType), config.Job.OperationType)} job for job id {config.Job.JobId}...");
 
             PKCS12Store PKCS12Store = new PKCS12Store(config.Store.ClientMachine, config.Server.Username, config.Server.Password, config.Store.StorePath, config.Store.StorePassword);
-
-            dynamic jobProperties = JsonConvert.DeserializeObject(config.Job.Properties.ToString());
-            string entryPassword = jobProperties == null || jobProperties.entryPassword == null || string.IsNullOrEmpty(jobProperties.entryPassword.Value) ? string.Empty : jobProperties.entryPassword.Value;
 
             try
             {

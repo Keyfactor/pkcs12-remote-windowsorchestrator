@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12
+namespace Keyfactor.Extensions.Orchestrator.PKCS12
 {
     class ExceptionHandler
     {

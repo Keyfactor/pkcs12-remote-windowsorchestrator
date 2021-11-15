@@ -11,7 +11,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12.RemoteHandlers
+namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 {
     class WinRMHandler : BaseRemoteHandler
     {

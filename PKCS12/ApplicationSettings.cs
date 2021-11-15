@@ -3,7 +3,7 @@ using System.Text;
 
 using Newtonsoft.Json;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12
+namespace Keyfactor.Extensions.Orchestrator.PKCS12
 {
     class ApplicationSettings
     {

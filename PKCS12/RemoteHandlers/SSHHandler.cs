@@ -12,7 +12,7 @@ using System.Text;
 
 using Renci.SshNet;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12.RemoteHandlers
+namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 {
     class SSHHandler : BaseRemoteHandler
     {

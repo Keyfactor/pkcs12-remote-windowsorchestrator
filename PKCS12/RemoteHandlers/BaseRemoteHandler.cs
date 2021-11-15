@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 using CSS.Common.Logging;
 
-namespace Keyfactor.Integration.Orchestrator.PKCS12.RemoteHandlers
+namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 {
     abstract class BaseRemoteHandler : LoggingClientBase, IRemoteHandler
     {
