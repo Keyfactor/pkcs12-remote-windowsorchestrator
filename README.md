@@ -1,2 +1,2 @@
 # pkcs12-remote-windowsorchestrator
-Remote management of PKCS12 certificate stores
+Under construction - DB request for an AnyAgent to manage PKCS12 stores (key entry as well as trust stores) without the use of "keytool".
