@@ -235,6 +235,7 @@
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
     <Compile Include="ExceptionHandler.cs" />
+    <Compile Include="Management.cs" />
     <Compile Include="PKCS12Store.cs" />
     <Compile Include="RemoteHandlers\BaseRemoteHandler.cs" />
     <Compile Include="RemoteHandlers\IRemoteHandler.cs" />

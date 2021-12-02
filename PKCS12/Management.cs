@@ -31,7 +31,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
 
         public string GetStoreType()
         {
-            return "JKS-SSH";
+            return "PKCS12";
         }
 
         public AnyJobCompleteInfo processJob(AnyJobConfigInfo config, SubmitInventoryUpdate submitInventory, SubmitEnrollmentRequest submitEnrollmentRequest, SubmitDiscoveryResults sdr)
@@ -50,31 +50,41 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                 switch (config.Job.OperationType)
                 {
                     case AnyJobOperationType.Add:
-                        byte[] certBytes = Convert.FromBase64String(config.Job.EntryContents);
-                        MemoryStream stream = new MemoryStream(certBytes);
-                        Pkcs12Store store;
-                        string sourceAlias;
-
-                        if (hasPassword)
+                        Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
+                        if (!PKCS12Store.DoesStoreExist())
                         {
-                            store = new Pkcs12Store(stream, config.Job.PfxPassword.ToCharArray());
-                            sourceAlias = store.Aliases.Cast<string>().FirstOrDefault(p => store.IsKeyEntry(p));
-                            PKCS12Store.AddPFXCertificateToStore(sourceAlias, config.Job.Alias, certBytes, config.Job.PfxPassword, entryPassword, config.Job.Overwrite);
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
                         }
                         else
-                            PKCS12Store.AddCertificateToStore(config.Job.Alias, certBytes, config.Job.Overwrite);
-
+                        {
+                            PKCS12Store.AddCertificate(config.Job.Alias, config.Job.EntryContents, config.Job.Overwrite, config.Job.PfxPassword);
+                        }
                         break;
 
                     case AnyJobOperationType.Remove:
-                        PKCS12Store.DeleteCertificateByAlias(config.Job.Alias);
-
+                        Logger.Debug($"Begin Delete Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
+                        if (!PKCS12Store.DoesStoreExist())
+                        {
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
+                        }
+                        else
+                        {
+                            PKCS12Store.DeleteCertificateByAlias(config.Job.Alias);
+                        }
                         break;
 
                     case AnyJobOperationType.Create:
                         Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
-                        PKCS12Store.CreateCertificateStore(config.Store.StorePath, config.Store.StorePassword);
-                        break; 
+                        if (PKCS12Store.DoesStoreExist())
+                        {
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} already exists.");
+                        }
+                        else
+                        {
+                            PKCS12Store.CreateCertificateStore(config.Store.StorePath, config.Store.StorePassword);
+                        }
+                        break;
+
                     default:
                         return new AnyJobCompleteInfo() { Status = 4, Message = $"Site {config.Store.StorePath} on server {config.Store.ClientMachine}: Unsupported operation: {config.Job.OperationType.ToString()}" };
                 }

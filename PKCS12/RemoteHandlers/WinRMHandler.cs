@@ -191,6 +191,19 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             RunCommand($"rm {path}{fileName}", null, false, null);
         }
 
+        public override void CreateEmptyStoreFile(string path)
+        {
+            RunCommand($@"Out-File -FilePath ""{path}""", null, false, null);
+        }
+
+        public override bool DoesFileExist(string path)
+        {
+            Logger.Debug($"DoesFileExist: {path}");
+
+            return Convert.ToBoolean(RunCommand($@"Test-Path -path ""{path}""", null, false, null));
+        }
+
+
         private string FormatResult(ICollection<PSObject> results)
         {
             StringBuilder rtn = new StringBuilder();

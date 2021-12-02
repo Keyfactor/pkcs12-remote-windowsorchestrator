@@ -78,24 +78,19 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                 SSH.Terminate();
         }
 
-        //internal bool DoesCertificateAliasExist(string alias)
-        //{
-        //    string keyToolCommand = $"{KeytoolPath}keytool -list -keystore '{StorePath + StoreFileName}' -alias '{alias}' {FormatStorePassword()}";
-        //    string result = SSH.RunCommand(keyToolCommand, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, StorePassword == null ? null : new string[] { StorePassword });
-        //    return !result.Contains("not exist");
-        //}
-
-
         internal List<X509Certificate2Collection> GetCertificateChains()
         {
             List<X509Certificate2Collection> certificateChains = new List<X509Certificate2Collection>();
 
             byte[] byteContents = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+            if (byteContents.Length < 5)
+                return certificateChains;
+
             Pkcs12Store store = new Pkcs12Store();
             
             using (MemoryStream stream = new MemoryStream(byteContents))
             {
-                store = new Pkcs12Store(stream, StorePassword.ToCharArray());
+                store = new Pkcs12Store(stream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray());
             }
 
             foreach(string alias in store.Aliases)
@@ -126,109 +121,122 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             return certificateChains;
         }
 
-        //internal List<string> GetCertificateChainForAlias(string alias)
-        //{
-        //    List<string> certChain = new List<string>();
-        //    string keyToolCommand = $"{KeytoolPath}keytool -list -rfc -keystore '{StorePath + StoreFileName}' {FormatStorePassword()} -alias '{alias}'";
-        //    string result = SSH.RunCommand(keyToolCommand, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, StorePassword == null ? null : new string[] { StorePassword });
+        internal void DeleteCertificateByAlias(string alias)
+        {
+            try
+            {
+                mutex.WaitOne();
+                byte[] byteContents = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+                Pkcs12Store store = new Pkcs12Store();
 
-        //    if (!result.Contains(BEG_DELIM))
-        //        return certChain;
+                using (MemoryStream stream = new MemoryStream(byteContents))
+                {
+                    if (stream.Length == 0)
+                    {
+                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath + StoreFileName}.");
+                    }
 
-        //    int chainLength = GetChainLength(result);
-        //    for (int i = 0; i < chainLength; i++)
-        //    {
-        //        certChain.Add(result.Substring(result.IndexOf(BEG_DELIM), result.IndexOf(END_DELIM) - result.IndexOf(BEG_DELIM) + END_DELIM.Length));
-        //        result = result.Substring(result.IndexOf(END_DELIM) + END_DELIM.Length);
-        //    }
+                    store = new Pkcs12Store(stream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray());
 
-        //    return certChain;
-        //}
+                    if (!store.ContainsAlias(alias))
+                    {
+                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath + StoreFileName}.");
+                    }
 
-        //internal void DeleteCertificateByAlias(string alias)
-        //{
-        //    string keyToolCommand = $"{KeytoolPath}keytool -delete -alias '{alias}' -keystore '{StorePath + StoreFileName}' {FormatStorePassword()}";
+                    store.DeleteEntry(alias);
 
-        //    try
-        //    {
-        //        mutex.WaitOne();
-        //        string result = SSH.RunCommand(keyToolCommand, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, StorePassword == null ? null : new string[] { StorePassword });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new PKCS12Exception($"Error attempting to remove certficate for store path={StorePath}, file name={StoreFileName}.", ex);
-        //    }
-        //    finally
-        //    {
-        //        mutex.ReleaseMutex();
-        //    }
-        //}
+                    using (MemoryStream outStream = new MemoryStream())
+                    {
+                        store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
+                        SSH.UploadCertificateFile(StorePath, StoreFileName, outStream.ToArray());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new PKCS12Exception($"Error attempting to remove certficate for store path={StorePath}, file name={StoreFileName}.", ex);
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+            }
+        }
 
-        //internal void CreateCertificateStore(string storePath, string storePassword)
-        //{
-        //    //No option to create a blank store.  Generate a self signed cert with some default and limited validity.
-        //    string keyToolCommand = $"{KeytoolPath}keytool -genkeypair -keystore {storePath} -storepass {storePassword} -dname \"cn=New Certificate Store\" -validity 1 -alias \"NewCertStore\"";
-        //    SSH.RunCommand(keyToolCommand, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, StorePassword == null ? null : new string[] { StorePassword });
-        //}
+        internal void CreateCertificateStore(string storePath, string storePassword)
+        {
+            SSH.CreateEmptyStoreFile(storePath);
+        }
 
-        //internal void AddCertificateToStore(string alias, byte[] certBytes, bool overwrite)
-        //{
-        //    string keyToolCommand = $"{KeytoolPath}keytool -import -alias '{alias}' -keystore '{StorePath + StoreFileName}' -file '{UploadFilePath}{FILE_NAME_REPL}.pem' -deststorepass '{StorePassword}' -noprompt";
-        //    AddEntry(keyToolCommand, alias, certBytes, null, overwrite);
-        //}
+        internal void AddCertificate(string alias, string certificateEntry, bool overwrite, string pfxPassword)
+        {
+            try
+            {
+                Pkcs12Store certs = new Pkcs12Store();
 
-        //internal void AddPFXCertificateToStore(string sourceAlias, string destAlias, byte[] certBytes, string pfxPassword, string entryPassword, bool overwrite)
-        //{
-        //    string keyToolCommand = $"{KeytoolPath}keytool -importkeystore -srckeystore '{UploadFilePath}{FILE_NAME_REPL}.p12' -srcstoretype PKCS12 -srcstorepass '{pfxPassword}' -srcalias '{sourceAlias}' " +
-        //        $"-destkeystore '{StorePath + StoreFileName}' -destalias '{destAlias}' -deststoretype JKS -destkeypass '{(string.IsNullOrEmpty(entryPassword) ? StorePassword : entryPassword)}' -deststorepass '{StorePassword}' -noprompt";
-        //    AddEntry(keyToolCommand, destAlias, certBytes, pfxPassword, overwrite);
-        //}
+                mutex.WaitOne();
+                byte[] storeBytes = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+                byte[] newCertBytes = Convert.FromBase64String(certificateEntry);
 
-        //private bool IsJavaInstalled()
-        //{
-        //    string keyToolCommand = ServerType == ServerTypeEnum.Linux ? $"which java" : "java -version 2>&1";
-        //    string result = SSH.RunCommand(keyToolCommand, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, null);
-        //    return !(string.IsNullOrEmpty(result));
-        //}
+                Pkcs12Store store = new Pkcs12Store();
+                Pkcs12Store newEntry = new Pkcs12Store();
 
-        //private void AddEntry(string command, string alias, byte[] certBytes, string pfxPassword, bool overwrite)
-        //{
-        //    string fileSuffix = string.IsNullOrEmpty(pfxPassword) ? ".pem" : ".p12";
-        //    string fileName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-        //    command = command.Replace(FILE_NAME_REPL, fileName);
+                X509Certificate2 cert = new X509Certificate2(newCertBytes, pfxPassword, X509KeyStorageFlags.Exportable);
+                byte[] binaryCert = cert.Export(X509ContentType.Pkcs12, pfxPassword);
 
-        //    try
-        //    {
-        //        if (DoesCertificateAliasExist(alias))
-        //        {
-        //            if (overwrite)
-        //                DeleteCertificateByAlias(alias);
-        //            else
-        //                throw new PKCS12Exception($"Alias already exists in certificate store.");
-        //        }
+                using (MemoryStream ms = new MemoryStream(string.IsNullOrEmpty(pfxPassword) ? binaryCert : newCertBytes))
+                {
+                    newEntry = string.IsNullOrEmpty(pfxPassword) ? new Pkcs12Store(ms, new char[0]) : new Pkcs12Store(ms, pfxPassword.ToCharArray());
+                }
 
-        //        SSH.UploadCertificateFile(UploadFilePath, $"{fileName}{fileSuffix}", certBytes);
+                using (MemoryStream stream = new MemoryStream(storeBytes))
+                {
+                    if (stream.Length > 5)
+                        store = new Pkcs12Store(stream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray());
 
-        //        mutex.WaitOne();
-        //        SSH.RunCommand(command, null, ServerType == ServerTypeEnum.Linux && ApplicationSettings.UseSudo, StorePassword == null ? null : new string[] { StorePassword });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new PKCS12Exception($"Error attempting to add certficate for store path={StorePath}, file name={StoreFileName}.", ex);
-        //    }
-        //    finally
-        //    {
-        //        try
-        //        {
-        //            SSH.RemoveCertificateFile(StorePath, $"{fileName}{fileSuffix}");
-        //        }
-        //        catch (Exception) { }
-        //        finally
-        //        {
-        //            mutex.ReleaseMutex();
-        //        }
-        //    }
-        //}
+                    if (store.ContainsAlias(alias) && !overwrite)
+                    {
+                        throw new PKCS12Exception($"Alias {alias} already exists in store {StorePath + StoreFileName} and overwrite is set to False.  Please try again with overwrite set to True if you wish to replace this entry.");
+                    }
+
+                    string checkAliasExists = string.Empty;
+                    foreach (string newEntryAlias in newEntry.Aliases)
+                    {
+                        if (!newEntry.IsKeyEntry(newEntryAlias))
+                            continue;
+
+                        checkAliasExists = newEntryAlias;
+
+                        store.SetKeyEntry(alias, newEntry.GetKey(newEntryAlias), newEntry.GetCertificateChain(newEntryAlias));
+                    }
+
+                    if (string.IsNullOrEmpty(checkAliasExists))
+                    {
+                        Org.BouncyCastle.X509.X509Certificate bcCert = DotNetUtilities.FromX509Certificate(cert);
+                        X509CertificateEntry bcEntry = new X509CertificateEntry(bcCert);
+                        store.SetCertificateEntry(alias, bcEntry);
+                    }
+
+                    using (MemoryStream outStream = new MemoryStream())
+                    {
+                        store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
+                        SSH.UploadCertificateFile(StorePath, StoreFileName, outStream.ToArray());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new PKCS12Exception($"Error attempting to add certficate for store path={StorePath}, file name={StoreFileName}.", ex);
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+            }
+        }
+
+        internal bool DoesStoreExist()
+        {
+            return SSH.DoesFileExist(StorePath + StoreFileName);
+        }
 
         private void SplitStorePathFile(string pathFileName)
         {

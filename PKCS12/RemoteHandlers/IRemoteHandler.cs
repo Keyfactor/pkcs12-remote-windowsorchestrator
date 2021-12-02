@@ -24,5 +24,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
         byte[] DownloadCertificateFile(string path);
 
         void RemoveCertificateFile(string path, string fileName);
+
+        void CreateEmptyStoreFile(string path);
+
+        bool DoesFileExist(string path);
     }
 }

@@ -167,6 +167,34 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             RunCommand($"rm {path}{fileName}", null, ApplicationSettings.UseSudo, null);
         }
 
+        public override void CreateEmptyStoreFile(string path)
+        {
+            RunCommand($"touch {path}", null, false, null);
+            //using sudo will create as root. set useSudo to false 
+            //to ensure ownership is with the credentials configued in the platform
+        }
+
+        public override bool DoesFileExist(string path)
+        {
+            Logger.Debug($"DoesFileExist: {path}");
+
+            using (SftpClient client = new SftpClient(Connection))
+            {
+                try
+                {
+                    client.Connect();
+                    string existsPath = FormatFTPPath(path);
+                    bool exists = client.Exists(existsPath);
+
+                    return exists;
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            }
+        }
+
         private void SplitStorePathFile(string pathFileName, out string path, out string fileName)
         {
             try
