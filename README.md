@@ -33,19 +33,22 @@ The JavaKeystore Windows AnyAgent has been tested against Keyfactor Windows Orch
 
 **For Linux orchestrated servers:**
 1. The PKCS12 AnyAgent makes use of SFTP to upload and download certificate and certificate store files as well as the following common Linux shell commands:
-- cp
-- rm
-- touch
-If the credentials you will be connecting with will need elevated access to run these commands, you must set the id up as a sudoer with no password necessary and set the config.json "UseSudo" value to "Y" (See Section 4 regarding the config.json file).
-2. The JavaKeystore AnyAgent makes use of SFTP to transfer files to and from the orchestrated server.  SFTP will not mske use of sudo, so all folders containing certificate stores will need to allow SFTP file transfer.  If this is not possible, set the values in the config.json apprpriately to use an alternative upload/download folder that does have SFTP file transfer (See Section 4 regarding the config.json file).
-4. To manage Java keystores, Java itself must be installed on the orchestrated server.  Wtih Java comes the Keytool program.  The path where Java and Keytool reside must be in the $PATH system environment variable on the orchestrated server.  If this is not possible, please review Section 4 regarding the config.json file to find information on setting up a client-written bash script to find the path where Keytool resides.
+    * cp
+    * rm
+    * touch
+2. If the credentials you will be connecting with will need elevated access to run these commands, you must set the id up as a sudoer with no password necessary and set the config.json "UseSudo" value to "Y" (See Section 4 regarding the config.json file).
+3. As mentioned in #1, the PKCS12 AnyAgent makes use of SFTP to transfer files to and from the orchestrated server.  SFTP will not mske use of sudo, so all folders containing certificate stores will need to allow SFTP file transfer.  If this is not possible, set the values in the config.json apprpriately to use an alternative upload/download folder that does have SFTP file transfer (See Section 4 regarding the config.json file).
 
 **For Windows orchestrated servers:**
 1. Make sure that WinRM is set up on the orchestrated server and that the WinRM port is part of the certificate store path when setting up your certificate stores (See Section 3a below). 
-2. By default, the location of the Keytool program needs to be in the Windows System Environment PATH variable of the orchestrated server.  If this is not possible, you can set the config.json item "FindKeytoolPathOnWindows" to "Y" to find it.  When this value is set to "Y", the JavaKeystore AnyAgent will search all available drives for the first occurance of "Keytool.exe" and use that to execute all Keytool commands.  See Section 4 regarding the config.json file below.
+2. The PKCS12 AnyAgent makes use of the following Powershell cmdlets:
+    * Get-Content
+    * Set-Content
+    * Out-File
+    * Test-Path
 
 
-## JavaKeystore AnyAgent Configuration
+## PKCS12 AnyAgent Configuration
 
 **1. Create the New Certificate Store Type for the New JavaKeystore AnyAgent**
 
