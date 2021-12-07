@@ -1,7 +1,9 @@
-## Overview
+# {{ name }}
+## {{ integration_type }}
 
-The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and remove) PKCS12 certificate stores on both Windows and Linux servers.
+{{ description }}
 
+<!-- add integration specific information below -->
 
 ## Use Cases
 
