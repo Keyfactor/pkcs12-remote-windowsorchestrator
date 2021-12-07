@@ -107,7 +107,7 @@ Navigate to Certificate Locations =\> Certificate Stores within Keyfactor Comman
 
 ![](Images/Image9.png)
 
-- **Category** – Required. The JKS SSH	 type name must be selected.
+- **Category** – Required. The PKCS12 type name must be selected.
 - **Container** – Optional. Select a container if utilized.
 - **Client Machine &amp; Credentials** – Required. The server name or IP Address and login credentials for the server where the Certificate Store is located.  The credentials for server login can be any of:
   
@@ -127,7 +127,7 @@ When setting up a Windows server, the format of the machine name must be – [ht
 
 **4. Update Settings in config.json**
 
-As a configuration step, you must modify the config.json file, found in the plugins folder of your Keyfactor Agent JKS-SSH installation (usually C:\Program Files\Certified Security Solutions\Certificate Management System Agent\plugins\JKS-SSH). This file contains the following JSON:
+As a configuration step, you must modify the config.json file, found in the plugins folder of your Keyfactor Agent PKCS12 installation (usually C:\Program Files\Certified Security Solutions\Certificate Management System Agent\plugins\PKCS12). This file contains the following JSON:
 
 {
     
