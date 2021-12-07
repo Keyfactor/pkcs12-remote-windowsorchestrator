@@ -1,0 +1,5 @@
+{
+  "UseSudo": "N",
+  "UseSeparateUploadFilePath": "N",
+  "SeparateUploadFilePath": "/path/to/upload/folder/",
+}
