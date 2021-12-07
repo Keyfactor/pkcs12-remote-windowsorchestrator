@@ -18,7 +18,7 @@ The PKCS12 Windows AnyAgent supports the following types of certificate stores:
 2. Stores with one or more aliases (friendly names)
 3. Stores with certificate chains included in the entry
 
-This AnyAgent supports Java Keystores of type PKCS12 along with any other certificate stores creating using the PKCS#12 standard.  It does NOT at this time support Java Keystores of type JKS or any other types besides PKCS12.
+This AnyAgent supports Java Keystores of type PKCS12 along with any other certificate stores creating using the PKCS#12 standard.  It does NOT at this time support Java Keystores of type JKS or any other types besides PKCS12.  It differs from the Java Keystore AnyAgent - [https://github.com/Keyfactor/jks-remote-windowsorchestrator] in that it uses the BouncyCastle .Net code library to manage the certificate store rather than remoting keytool commands.  Also, the Java Keystore AnyAgent DOES support Java keystores of type JKS where the PKCS12 one does not.
 
 
 ## Versioning
