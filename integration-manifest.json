@@ -1,2 +1,8 @@
-The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and remove) PKCS12 certificate stores on both Windows and Linux servers.
-
+{
+  "$schema": "https://keyfactor.github.io/integration-manifest-schema.json",
+  "integration_type": "windows-orchestrator",
+  "name": "Remote PKCS12",
+  "status": "production",
+  "link_github": true,
+  "description": "The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and remove) PKCS12 certificate stores on both Windows and Linux servers."
+}
