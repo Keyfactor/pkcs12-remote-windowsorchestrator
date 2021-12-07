@@ -35,8 +35,6 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 
         public abstract void CreateEmptyStoreFile(string path);
 
-        public abstract void RemoveCertificateFile(string path, string fileName);
-
         public abstract bool DoesFileExist(string path);
     }
 }

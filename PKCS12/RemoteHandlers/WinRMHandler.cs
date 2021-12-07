@@ -184,13 +184,6 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             return RunCommandBinary($@"Get-Content -Path ""{path}"" -Encoding Byte -Raw");
         }
 
-        public override void RemoveCertificateFile(string path, string fileName)
-        {
-            Logger.Debug($"RemoveCertificateFile: {path} {fileName}");
-
-            RunCommand($"rm {path}{fileName}", null, false, null);
-        }
-
         public override void CreateEmptyStoreFile(string path)
         {
             RunCommand($@"Out-File -FilePath ""{path}""", null, false, null);

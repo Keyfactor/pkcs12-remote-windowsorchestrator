@@ -160,13 +160,6 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             }
         }
 
-        public override void RemoveCertificateFile(string path, string fileName)
-        {
-            Logger.Debug($"RemoveCertificateFile: {path} {fileName}");
-
-            RunCommand($"rm {path}{fileName}", null, ApplicationSettings.UseSudo, null);
-        }
-
         public override void CreateEmptyStoreFile(string path)
         {
             RunCommand($"touch {path}", null, false, null);
