@@ -54,18 +54,18 @@ The JavaKeystore Windows AnyAgent has been tested against Keyfactor Windows Orch
 
 In Keyfactor Command create a new Certificate Store Type similar to the one below:
 
-![](Images/Image1.png)
+![](Images/image1.png)
 
 - **Name** – Required. The display name of the new Certificate Store Type
-- **Short Name** – Required. **MUST** be &quot;JKS-SSH&quot;
+- **Short Name** – Required. **MUST** be &quot;PKCS12&quot;
 - **Needs Server, Blueprint Allowed, Requires Store Password, Supports Entry Password** – All checked/unchecked as shown
 - **Supports Custom Alias** – Required. Each certificate MUST have an alias associated with it for the store.
 - **Use PowerShell** – Unchecked
 - **Store PathType** – Freeform (user will enter the the location of the store)
-- **Private Keys** – Optional (a certificate in a Java Keystore may or may not contain a private key)
+- **Private Keys** – Optional (a certificate in a PKCS12 certificate store may or may not contain a private key depending if it is a trust store or not)
 - **PFX Password Style** – Default
-- **Job Types** – Discovery, Inventory, Add, and Remove are the 3 job types implemented by this AnyAgent
-- **Management Job Custom Fields** - Set to "entryPassword".  This will allow users when enrolling a new certificate with certificate store delivery or adding an existing certificate to a store to specify a separate password from the certificate store password to be used as the key password for that entry.  If this field is left blank when adding a certificate to a store, the store password will be used for the key password.  You can optionally omit setting this field up on the Certificate Store Type set up screen.  In this case the key password will ALWAYS be set to the store password.
+- **Job Types** – Create, Inventory, Add, and Remove are the 4 job types implemented by this AnyAgent
+- **Management Job Custom Fields** - Keep blank.
 
 **2. Register the JavaKeystore AnyAgent with Keyfactor**
 
@@ -85,7 +85,7 @@ Open the Keyfactor Windows Agent Configuration Wizard and perform the tasks as i
 
 ![](Images/Image5.png)
 
-- Select the agent you are adding capabilities for (in this case, JavaKeystore, and also select the specific capabilities (Discovery, Inventory and Management in this example). Click **\<Next\>**.
+- Select the agent you are adding capabilities for (in this case, PKCS12, and also select the specific capabilities (Inventory and Management in this example). Click **\<Next\>**.
 
 ![](Images/Image6.png)
 
@@ -99,9 +99,9 @@ Open the Keyfactor Windows Agent Configuration Wizard and perform the tasks as i
 
 - If the Keyfactor Agent Configuration Wizard configured everything correctly, you should see the dialog above.
 
-**3a. (Optional) Create a JavaKeystore Certificate Store within Keyfactor Command**
+**3. Create a JavaKeystore Certificate Store within Keyfactor Command**
 
-If you choose to manually create a JavaKeystore store In Keyfactor Command rather than running a Discovery job to automatically find the store, you can navigate to Certificate Locations =\> Certificate Stores within Keyfactor Command to add the store. Below are the values that should be entered.
+Navigate to Certificate Locations =\> Certificate Stores within Keyfactor Command to add a PKCS12 certificate store. Below are the values that should be entered.
 
 ![](Images/Image9.png)
 
