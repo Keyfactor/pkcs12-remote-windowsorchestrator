@@ -28,7 +28,7 @@ The version number of a the PKCS12 Windows AnyAgent can be verified by right cli
 
 ## Keyfactor Version Supported
 
-The JavaKeystore Windows AnyAgent has been tested against Keyfactor Windows Orchestrator version 8.5 but should work against earlier or later versions of the Keyfactor Windows Orchestrator.  This AnyAgent is NOT compatible with the Keyfactor Universal Orchestrator.  A version compliant with that will be completed at a future date.
+The PKCS12 Windows AnyAgent has been tested against Keyfactor Windows Orchestrator version 8.5 but should work against earlier or later versions of the Keyfactor Windows Orchestrator.  This AnyAgent is NOT compatible with the Keyfactor Universal Orchestrator.  A version compliant with that will be completed at a future date.
 
 
 ## Security Considerations
