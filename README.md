@@ -8,7 +8,7 @@ The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and 
 ## Use Cases
 
 The PKCS12 Windows AnyAgent implements the following capabilities:
-1. Create - Create a JavaKeystore.
+1. Create - Create an empty PKCS12 certificate store.
 2. Inventory - Return all certificates for a define certificate store.
 3. Management (Add) - Add a certificate to a defined certificate store.
 4. Management (Remove) - Remove a certificate from a defined certificate store.
@@ -23,7 +23,7 @@ This AnyAgent supports Java Keystores of type PKCS12 along with any other certif
 
 ## Versioning
 
-The version number of a the JavaKeystore Windows AnyAgent can be verified by right clicking on the PKCS12.dll file in the Plugins installation folder, selecting Properties, and then clicking on the Details tab.
+The version number of a the PKCS12 Windows AnyAgent can be verified by right clicking on the PKCS12.dll file in the Plugins installation folder, selecting Properties, and then clicking on the Details tab.
 
 
 ## Keyfactor Version Supported
@@ -52,7 +52,7 @@ The JavaKeystore Windows AnyAgent has been tested against Keyfactor Windows Orch
 
 ## PKCS12 AnyAgent Configuration
 
-**1. Create the New Certificate Store Type for the New JavaKeystore AnyAgent**
+**1. Create the New Certificate Store Type for the New PKCS12 AnyAgent**
 
 In Keyfactor Command create a new Certificate Store Type similar to the one below:
 
@@ -69,7 +69,7 @@ In Keyfactor Command create a new Certificate Store Type similar to the one belo
 - **Job Types** – Create, Inventory, Add, and Remove are the 4 job types implemented by this AnyAgent
 - **Management Job Custom Fields** - Keep blank.
 
-**2. Register the JavaKeystore AnyAgent with Keyfactor**
+**2. Register the PKCS12 AnyAgent with Keyfactor**
 
 Open the Keyfactor Windows Agent Configuration Wizard and perform the tasks as illustrated below:
 
@@ -141,6 +141,6 @@ Modify the three values as appropriate (all must be present regardless of Linux 
 
 **UseSudo** (Linux only) - to determine whether to prefix certain Linux command with "sudo". This can be very helpful in ensuring that the user id running commands ssh uses "least permissions necessary" to process each task. Setting this value to "Y" will prefix all Linux commands with "sudo" with the expectation that the command being executed on the orchestrated Linux server will look in the sudoers file to determine whether the logged in ID has elevated permissions for that specific command. For orchestrated Windows servers, this setting has no effect. Setting this value to "N" will result in "sudo" not being added to Linux commands.
 
-**UseSeparateUploadFilePath** (Linux only) – When adding a certificate to a Java Keystore, the Java Keystore SSH AnyAgent must upload the certificate being deployed to the server where the certificate store resides. Setting this value to &quot;Y&quot; looks to the next setting, SeparateUploadFilePath, to determine where this file should be uploaded. Set this value to &quot;N&quot; to use the same path where the Java Keystore being managed resides. The certificate file uploaded to either location will be removed at the end of the process.
+**UseSeparateUploadFilePath** (Linux only) – When adding a certificate to a PKCS12 certificate store, the AnyAgent must upload the certificate being deployed to the server where the certificate store resides. Setting this value to &quot;Y&quot; looks to the next setting, SeparateUploadFilePath, to determine where this file should be uploaded. Set this value to &quot;N&quot; to use the same path where the certificate store being managed resides. The certificate file uploaded to either location will be removed at the end of the process.
 
 **SeparateUploadFilePath** (Linux only) – Only used when UseSeparateUploadFilePath is set to &quot;Y&quot;. Set this to the path you wish to use as the location to upload and later remove certificates to be added to the PKCS12 certificate store being maintained.
