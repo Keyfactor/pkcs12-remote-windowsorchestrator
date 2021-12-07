@@ -213,6 +213,10 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                     {
                         Org.BouncyCastle.X509.X509Certificate bcCert = DotNetUtilities.FromX509Certificate(cert);
                         X509CertificateEntry bcEntry = new X509CertificateEntry(bcCert);
+                        if (store.ContainsAlias(alias))
+                        {
+                            store.DeleteEntry(alias);
+                        }
                         store.SetCertificateEntry(alias, bcEntry);
                     }
 
