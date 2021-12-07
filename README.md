@@ -1,41 +1,44 @@
 ## Overview
 
-The JavaKeystore AnyAgent allows a user to discover, inventory, and manage (both add and remove) Java Keystore certificate stores on both Windows and Linux servers.
-
-The prerequisite for using the JavaKeystore AnyAgent to manage/orchestrate a Linux or Windows server is that Java be installed on each server being managed/orchestrated.
+The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and remove) PKCS12 certificate stores on both Windows and Linux servers.
 
 
 ## Use Cases
 
-The JavaKeystore Windows AnyAgent implements the following capabilities:
+The PKCS12 Windows AnyAgent implements the following capabilities:
 1. Create - Create a JavaKeystore.
-2. Discovery - Discover all Javakeystores in a set of paths based on optional list of file extensions and partial name matching.
-3. Inventory - Return all certificates for a define certificate store.
-4. Management (Add) - Add a certificate to a defined certificate store.
-5. Management (Remove) - Remove a certificate from a defined certificate store.
+2. Inventory - Return all certificates for a define certificate store.
+3. Management (Add) - Add a certificate to a defined certificate store.
+4. Management (Remove) - Remove a certificate from a defined certificate store.
 
-The JavaKeystore Windows AnyAgent supports the following types of JavaKeysore:
+The PKCS12 Windows AnyAgent supports the following types of certificate stores:
 1. Trust stores (multiple public certificates with no private keys)
-2. Stores with one or more aliases
-3. Stores with certificate chains included in the alias (inventory only)
+2. Stores with one or more aliases (friendly names)
+3. Stores with certificate chains included in the entry
+
+This AnyAgent supports Java Keystores of type PKCS12 along with any other certificate stores creating using the PKCS#12 standard.  It does NOT at this time support Java Keystores of type JKS or any other types besides PKCS12.
 
 
 ## Versioning
 
-The version number of a the JavaKeystore Windows AnyAgent can be verified by right clicking on the JavaKeyStoreSSH.dll file in the Plugins installation folder, selecting Properties, and then clicking on the Details tab.
+The version number of a the JavaKeystore Windows AnyAgent can be verified by right clicking on the PKCS12.dll file in the Plugins installation folder, selecting Properties, and then clicking on the Details tab.
 
 
 ## Keyfactor Version Supported
 
-The JavaKeystore Windows AnyAgent has been tested against Keyfactor version 8.5.2 but should work against earlier or later versions.
+The JavaKeystore Windows AnyAgent has been tested against Keyfactor Windows Orchestrator version 8.5 but should work against earlier or later versions of the Keyfactor Windows Orchestrator.  This AnyAgent is NOT compatible with the Keyfactor Universal Orchestrator.  A version compliant with that will be completed at a future date.
 
 
 ## Security Considerations
 
 **For Linux orchestrated servers:**
-1. The JavaKeystore AnyAgent makes use of the Keytool program and other common Linux commands such as "cp" and "find".  If the credentials you will be connecting with will need elevated access to run these commands, you must set the id up as a sudoer with no password necessary and set the config.json "UseSudo" value to "Y" (See Section 4 regarding the config.json file).
+1. The PKCS12 AnyAgent makes use of SFTP to upload and download certificate and certificate store files as well as the following common Linux shell commands:
+- cp
+- rm
+- touch
+If the credentials you will be connecting with will need elevated access to run these commands, you must set the id up as a sudoer with no password necessary and set the config.json "UseSudo" value to "Y" (See Section 4 regarding the config.json file).
 2. The JavaKeystore AnyAgent makes use of SFTP to transfer files to and from the orchestrated server.  SFTP will not mske use of sudo, so all folders containing certificate stores will need to allow SFTP file transfer.  If this is not possible, set the values in the config.json apprpriately to use an alternative upload/download folder that does have SFTP file transfer (See Section 4 regarding the config.json file).
-3. To manage Java keystores, Java itself must be installed on the orchestrated server.  Wtih Java comes the Keytool program.  The path where Java and Keytool reside must be in the $PATH system environment variable on the orchestrated server.  If this is not possible, please review Section 4 regarding the config.json file to find information on setting up a client-written bash script to find the path where Keytool resides.
+4. To manage Java keystores, Java itself must be installed on the orchestrated server.  Wtih Java comes the Keytool program.  The path where Java and Keytool reside must be in the $PATH system environment variable on the orchestrated server.  If this is not possible, please review Section 4 regarding the config.json file to find information on setting up a client-written bash script to find the path where Keytool resides.
 
 **For Windows orchestrated servers:**
 1. Make sure that WinRM is set up on the orchestrated server and that the WinRM port is part of the certificate store path when setting up your certificate stores (See Section 3a below). 
