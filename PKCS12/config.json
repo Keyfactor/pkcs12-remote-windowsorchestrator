@@ -2,4 +2,6 @@
   "UseSudo": "N",
   "UseSeparateUploadFilePath": "N",
   "SeparateUploadFilePath": "/path/to/upload/folder/",
+  "UseSFTP": "N",
+  "UseSCP": "N"
 }

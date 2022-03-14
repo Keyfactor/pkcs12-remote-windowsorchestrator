@@ -89,7 +89,8 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
         {
             Logger.Debug($"UploadCertificateFile: {path} {fileName}");
 
-            try
+            bool succUpload = false;
+            if (ApplicationSettings.UseSFTP)
             {
                 using (SftpClient client = new SftpClient(Connection))
                 {
@@ -101,11 +102,42 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                         using (MemoryStream stream = new MemoryStream(certBytes))
                         {
                             client.UploadFile(stream, fileName);
+                            succUpload = true;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.Debug("Exception during upload...");
+                        Logger.Debug("Exception during SFTP upload...");
+                        Logger.Debug($"Upload Exception: {ExceptionHandler.FlattenExceptionMessages(ex, ex.Message)}");
+
+                        if (ApplicationSettings.UseSCP)
+                            Logger.Debug($"SFTP upload failed.  Attempting with SCP protocol...");
+                        else
+                            throw ex;
+                    }
+                    finally
+                    {
+                        client.Disconnect();
+                    }
+                }
+            }
+
+            if (ApplicationSettings.UseSCP & !succUpload)
+            {
+                using (ScpClient client = new ScpClient(Connection))
+                {
+                    try
+                    {
+                        client.Connect();
+
+                        using (MemoryStream stream = new MemoryStream(certBytes))
+                        {
+                            client.Upload(stream, FormatFTPPath(path));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug("Exception during SCP upload...");
                         Logger.Debug($"Upload Exception: {ExceptionHandler.FlattenExceptionMessages(ex, ex.Message)}");
                         throw ex;
                     }
@@ -114,11 +146,6 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                         client.Disconnect();
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug($"Exception making SFTP connection - {ex.Message}");
-                throw ex;
             }
         }
 
@@ -143,13 +170,13 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                     client.Connect();
 
                     if (ApplicationSettings.UseSeparateUploadFilePath)
-                        RunCommand($"cp {path} {downloadPath}", null, ApplicationSettings.UseSudo, null);
+                        RunCommand($"cp {path} {downloadPath    }", null, ApplicationSettings.UseSudo, null);
 
                     using (MemoryStream stream = new MemoryStream())
                     {
-                        client.DownloadFile(FormatFTPPath(downloadPath), stream);
+                        client.DownloadFile(FormatFTPPath(path), stream);
                         if (ApplicationSettings.UseSeparateUploadFilePath)
-                            RunCommand($"rm {downloadPath}", null, ApplicationSettings.UseSudo, null);
+                            RunCommand($"rm {path}", null, ApplicationSettings.UseSudo, null);
                         return stream.ToArray();
                     }
                 }

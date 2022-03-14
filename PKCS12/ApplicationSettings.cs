@@ -10,6 +10,8 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         public static bool UseSudo { get; set; }
         public static bool UseSeparateUploadFilePath { get; set; }
         public static string SeparateUploadFilePath { get; set; }
+        public static bool UseSFTP { get; set; }
+        public static bool UseSCP { get; set; }
 
         public static void Initialize(string currLocation)
         {
@@ -31,6 +33,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             UseSudo = jsonContents.UseSudo.Value.Equals("Y", System.StringComparison.OrdinalIgnoreCase);
             UseSeparateUploadFilePath = jsonContents.UseSeparateUploadFilePath.Value.Equals("Y", System.StringComparison.OrdinalIgnoreCase);
             SeparateUploadFilePath = AddTrailingSlash(jsonContents.SeparateUploadFilePath.Value);
+            UseSFTP = jsonContents.UseSFTP == null || !jsonContents.UseSFTP.Value.Equals("Y", System.StringComparison.OrdinalIgnoreCase) ? false : true;
+            UseSCP = jsonContents.UseSCP == null || !jsonContents.UseSCP.Value.Equals("Y", System.StringComparison.OrdinalIgnoreCase) ? false : true;
+            UseSFTP = !UseSFTP && !UseSCP ? true : UseSFTP;
         }
 
         private static string AddTrailingSlash(string path)

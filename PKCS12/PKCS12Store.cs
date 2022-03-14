@@ -82,7 +82,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         {
             List<X509Certificate2Collection> certificateChains = new List<X509Certificate2Collection>();
 
-            byte[] byteContents = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+            byte[] byteContents = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
             if (byteContents.Length < 5)
                 return certificateChains;
 
@@ -126,7 +126,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             try
             {
                 mutex.WaitOne();
-                byte[] byteContents = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+                byte[] byteContents = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
                 Pkcs12Store store = new Pkcs12Store();
 
                 using (MemoryStream stream = new MemoryStream(byteContents))
@@ -148,7 +148,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                     using (MemoryStream outStream = new MemoryStream())
                     {
                         store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
-                        SSH.UploadCertificateFile(StorePath, StoreFileName, outStream.ToArray());
+                        SSH.UploadCertificateFile(UploadFilePath, StoreFileName, outStream.ToArray());
                     }
                 }
             }
@@ -174,7 +174,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                 Pkcs12Store certs = new Pkcs12Store();
 
                 mutex.WaitOne();
-                byte[] storeBytes = SSH.DownloadCertificateFile(StorePath + StoreFileName);
+                byte[] storeBytes = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
                 byte[] newCertBytes = Convert.FromBase64String(certificateEntry);
 
                 Pkcs12Store store = new Pkcs12Store();
@@ -223,7 +223,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                     using (MemoryStream outStream = new MemoryStream())
                     {
                         store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
-                        SSH.UploadCertificateFile(StorePath, StoreFileName, outStream.ToArray());
+                        SSH.UploadCertificateFile(UploadFilePath, StoreFileName, outStream.ToArray());
                     }
                 }
             }
