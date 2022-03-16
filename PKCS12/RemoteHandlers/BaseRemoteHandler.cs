@@ -29,7 +29,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 
         public abstract string RunCommand(string commandText, object[] arguments, bool withSudo, string[] passwordsToMaskInLog);
 
-        public abstract void UploadCertificateFile(string path, string fileName, byte[] certBytes);
+        public abstract void UploadCertificateFile(string path, byte[] certBytes);
 
         public abstract byte[] DownloadCertificateFile(string path);
 

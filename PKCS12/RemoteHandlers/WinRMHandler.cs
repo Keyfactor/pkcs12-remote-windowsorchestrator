@@ -163,14 +163,14 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             }
         }
 
-        public override void UploadCertificateFile(string path, string fileName, byte[] certBytes)
+        public override void UploadCertificateFile(string path, byte[] certBytes)
         {
-            Logger.Debug($"UploadCertificateFile: {path} {fileName}");
+            Logger.Debug($"UploadCertificateFile: {path}");
 
             string scriptBlock = $@"
                                     param($contents)
                                 
-                                    Set-Content {path + fileName} -Encoding Byte -Value $contents
+                                    Set-Content {path} -Encoding Byte -Value $contents
                                 ";
 
             object[] arguments = new object[] { certBytes };

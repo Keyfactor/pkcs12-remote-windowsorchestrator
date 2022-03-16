@@ -42,24 +42,20 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         internal string ServerId { get; set; }
         internal string ServerPassword { get; set; }
         internal string StorePath { get; set; }
-        internal string StoreFileName { get; set; }
         internal string StorePassword { get; set; }
         internal IRemoteHandler SSH { get; set; }
         internal ServerTypeEnum ServerType { get; set; }
         internal List<string> DiscoveredStores { get; set; }
 
-        internal string UploadFilePath { get; set; }
-
 
         internal PKCS12Store(string server, string serverId, string serverPassword, string storeFileAndPath, string storePassword)
         {
             Server = server;
-            SplitStorePathFile(storeFileAndPath);
+            StorePath = storeFileAndPath;
             ServerId = serverId;
             ServerPassword = serverPassword ?? string.Empty;
             StorePassword = storePassword;
             ServerType = StorePath.Substring(0, 1) == "/" ? ServerTypeEnum.Linux : ServerTypeEnum.Windows;
-            UploadFilePath = ApplicationSettings.UseSeparateUploadFilePath && ServerType == ServerTypeEnum.Linux ? ApplicationSettings.SeparateUploadFilePath : StorePath;
         }
 
         internal void Initialize()
@@ -82,7 +78,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         {
             List<X509Certificate2Collection> certificateChains = new List<X509Certificate2Collection>();
 
-            byte[] byteContents = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
+            byte[] byteContents = SSH.DownloadCertificateFile(StorePath);
             if (byteContents.Length < 5)
                 return certificateChains;
 
@@ -126,21 +122,21 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             try
             {
                 mutex.WaitOne();
-                byte[] byteContents = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
+                byte[] byteContents = SSH.DownloadCertificateFile(StorePath);
                 Pkcs12Store store = new Pkcs12Store();
 
                 using (MemoryStream stream = new MemoryStream(byteContents))
                 {
                     if (stream.Length == 0)
                     {
-                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath + StoreFileName}.");
+                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath}.");
                     }
 
                     store = new Pkcs12Store(stream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray());
 
                     if (!store.ContainsAlias(alias))
                     {
-                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath + StoreFileName}.");
+                        throw new PKCS12Exception($"Alias {alias} does not exist in certificate store {StorePath}.");
                     }
 
                     store.DeleteEntry(alias);
@@ -148,13 +144,13 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                     using (MemoryStream outStream = new MemoryStream())
                     {
                         store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
-                        SSH.UploadCertificateFile(UploadFilePath, StoreFileName, outStream.ToArray());
+                        SSH.UploadCertificateFile(StorePath, outStream.ToArray());
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new PKCS12Exception($"Error attempting to remove certficate for store path={StorePath}, file name={StoreFileName}.", ex);
+                throw new PKCS12Exception($"Error attempting to remove certficate for store path={StorePath}.", ex);
             }
             finally
             {
@@ -174,7 +170,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                 Pkcs12Store certs = new Pkcs12Store();
 
                 mutex.WaitOne();
-                byte[] storeBytes = SSH.DownloadCertificateFile(UploadFilePath + StoreFileName);
+                byte[] storeBytes = SSH.DownloadCertificateFile(StorePath);
                 byte[] newCertBytes = Convert.FromBase64String(certificateEntry);
 
                 Pkcs12Store store = new Pkcs12Store();
@@ -195,7 +191,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
 
                     if (store.ContainsAlias(alias) && !overwrite)
                     {
-                        throw new PKCS12Exception($"Alias {alias} already exists in store {StorePath + StoreFileName} and overwrite is set to False.  Please try again with overwrite set to True if you wish to replace this entry.");
+                        throw new PKCS12Exception($"Alias {alias} already exists in store {StorePath} and overwrite is set to False.  Please try again with overwrite set to True if you wish to replace this entry.");
                     }
 
                     string checkAliasExists = string.Empty;
@@ -223,13 +219,13 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                     using (MemoryStream outStream = new MemoryStream())
                     {
                         store.Save(outStream, string.IsNullOrEmpty(StorePassword) ? new char[0] : StorePassword.ToCharArray(), new Org.BouncyCastle.Security.SecureRandom());
-                        SSH.UploadCertificateFile(UploadFilePath, StoreFileName, outStream.ToArray());
+                        SSH.UploadCertificateFile(StorePath, outStream.ToArray());
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new PKCS12Exception($"Error attempting to add certficate for store path={StorePath}, file name={StoreFileName}.", ex);
+                throw new PKCS12Exception($"Error attempting to add certficate for store path={StorePath}.", ex);
             }
             finally
             {
@@ -239,22 +235,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
 
         internal bool DoesStoreExist()
         {
-            return SSH.DoesFileExist(StorePath + StoreFileName);
-        }
-
-        private void SplitStorePathFile(string pathFileName)
-        {
-            try
-            {
-                string workingPathFileName = pathFileName.Replace(@"\", @"/");
-                int separatorIndex = workingPathFileName.LastIndexOf(@"/");
-                StoreFileName = pathFileName.Substring(separatorIndex + 1);
-                StorePath = pathFileName.Substring(0, separatorIndex + 1);
-            }
-            catch (Exception ex)
-            {
-                throw new PKCS12Exception($"Error attempting to parse certficate store path={StorePath}, file name={StoreFileName}.", ex);
-            }
+            return SSH.DoesFileExist(StorePath);
         }
 
         private int GetChainLength(string certificates)

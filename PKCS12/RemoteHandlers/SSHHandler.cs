@@ -85,9 +85,19 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             }
         }
 
-        public override void UploadCertificateFile(string path, string fileName, byte[] certBytes)
+        public override void UploadCertificateFile(string path, byte[] certBytes)
         {
-            Logger.Debug($"UploadCertificateFile: {path} {fileName}");
+            Logger.Debug($"UploadCertificateFile: {path}");
+            
+            string uploadPath = path;
+            string altPathOnly = string.Empty;
+            string altFileNameOnly = string.Empty;
+
+            if (ApplicationSettings.UseSeparateUploadFilePath)
+            {
+                SplitStorePathFile(path, out altPathOnly, out altFileNameOnly);
+                uploadPath = ApplicationSettings.SeparateUploadFilePath + altFileNameOnly;
+            }
 
             bool succUpload = false;
             if (ApplicationSettings.UseSFTP)
@@ -97,11 +107,10 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                     try
                     {
                         client.Connect();
-                        client.ChangeDirectory(FormatFTPPath(path));
 
                         using (MemoryStream stream = new MemoryStream(certBytes))
                         {
-                            client.UploadFile(stream, fileName);
+                            client.UploadFile(stream, FormatFTPPath(uploadPath));
                             succUpload = true;
                         }
                     }
@@ -132,7 +141,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 
                         using (MemoryStream stream = new MemoryStream(certBytes))
                         {
-                            client.Upload(stream, FormatFTPPath(path));
+                            client.Upload(stream, FormatFTPPath(uploadPath));
                         }
                     }
                     catch (Exception ex)
@@ -147,11 +156,18 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                     }
                 }
             }
+
+            if (ApplicationSettings.UseSeparateUploadFilePath)
+            {
+                RunCommand($"mv {uploadPath} {path}", null, ApplicationSettings.UseSudo, null);
+            }
         }
 
         public override byte[] DownloadCertificateFile(string path)
         {
             Logger.Debug($"DownloadCertificateFile: {path}");
+
+            byte[] rtnStore = new byte[1];
 
             string downloadPath = path;
             string altPathOnly = string.Empty;
@@ -161,30 +177,73 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             {
                 SplitStorePathFile(path, out altPathOnly, out altFileNameOnly);
                 downloadPath = ApplicationSettings.SeparateUploadFilePath + altFileNameOnly;
+                RunCommand($"cp {path} {downloadPath }", null, ApplicationSettings.UseSudo, null);
             }
 
-            using (SftpClient client = new SftpClient(Connection))
+            bool succDownload = false;
+            if (ApplicationSettings.UseSFTP)
             {
-                try
+                using (SftpClient client = new SftpClient(Connection))
                 {
-                    client.Connect();
-
-                    if (ApplicationSettings.UseSeparateUploadFilePath)
-                        RunCommand($"cp {path} {downloadPath    }", null, ApplicationSettings.UseSudo, null);
-
-                    using (MemoryStream stream = new MemoryStream())
+                    try
                     {
-                        client.DownloadFile(FormatFTPPath(path), stream);
-                        if (ApplicationSettings.UseSeparateUploadFilePath)
-                            RunCommand($"rm {path}", null, ApplicationSettings.UseSudo, null);
-                        return stream.ToArray();
+                        client.Connect();
+
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            client.DownloadFile(FormatFTPPath(downloadPath), stream);
+                            rtnStore = stream.ToArray();
+                            succDownload = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug("Exception during SFTP download...");
+                        Logger.Debug($"Download Exception: {ExceptionHandler.FlattenExceptionMessages(ex, ex.Message)}");
+
+                        if (ApplicationSettings.UseSCP)
+                            Logger.Debug($"SFTP download failed.  Attempting with SCP protocol...");
+                        else
+                            throw ex;
+                    }
+                    finally
+                    {
+                        client.Disconnect();
                     }
                 }
-                finally
+            }
+
+            if (ApplicationSettings.UseSCP & !succDownload)
+            {
+                using (ScpClient client = new ScpClient(Connection))
                 {
-                    client.Disconnect();
+                    try
+                    {
+                        client.Connect();
+
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            client.Download(FormatFTPPath(downloadPath), stream);
+                            rtnStore = stream.ToArray();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug("Exception during SCP download...");
+                        Logger.Debug($"Download Exception: {ExceptionHandler.FlattenExceptionMessages(ex, ex.Message)}");
+                        throw ex;
+                    }
+                    finally
+                    {
+                        client.Disconnect();
+                    }
                 }
             }
+
+            if (ApplicationSettings.UseSeparateUploadFilePath)
+                RunCommand($"rm {downloadPath}", null, ApplicationSettings.UseSudo, null);
+
+            return rtnStore;
         }
 
         public override void CreateEmptyStoreFile(string path)
@@ -198,21 +257,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
         {
             Logger.Debug($"DoesFileExist: {path}");
 
-            using (SftpClient client = new SftpClient(Connection))
-            {
-                try
-                {
-                    client.Connect();
-                    string existsPath = FormatFTPPath(path);
-                    bool exists = client.Exists(existsPath);
-
-                    return exists;
-                }
-                finally
-                {
-                    client.Disconnect();
-                }
-            }
+            string NOT_EXISTS = "no such file or directory";
+            string result = RunCommand($"ls {path}", null, ApplicationSettings.UseSudo, null);
+            return !result.ToLower().Contains(NOT_EXISTS);
         }
 
         private void SplitStorePathFile(string pathFileName, out string path, out string fileName)

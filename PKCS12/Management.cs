@@ -53,7 +53,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                         Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
                         if (!PKCS12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath} does not exist on server {PKCS12Store.Server}.");
                         }
                         else
                         {
@@ -65,7 +65,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                         Logger.Debug($"Begin Delete Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
                         if (!PKCS12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath} does not exist on server {PKCS12Store.Server}.");
                         }
                         else
                         {
@@ -77,7 +77,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                         Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
                         if (PKCS12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} already exists.");
+                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath} already exists.");
                         }
                         else
                         {
