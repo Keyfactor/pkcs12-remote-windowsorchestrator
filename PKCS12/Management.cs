@@ -38,50 +38,55 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         {
             Logger.Debug($"Begin PKCS12 Management-{Enum.GetName(typeof(AnyJobOperationType), config.Job.OperationType)} job for job id {config.Job.JobId}...");
 
-            PKCS12Store PKCS12Store = new PKCS12Store(config.Store.ClientMachine, config.Server.Username, config.Server.Password, config.Store.StorePath, config.Store.StorePassword);
+            PKCS12Store pkcs12Store = new PKCS12Store(config.Store.ClientMachine, config.Server.Username, config.Server.Password, config.Store.StorePath, config.Store.StorePassword);
 
             try
             {
                 ApplicationSettings.Initialize(this.GetType().Assembly.Location);
 
                 bool hasPassword = !string.IsNullOrEmpty(config.Job.PfxPassword);
-                PKCS12Store.Initialize();
+                pkcs12Store.Initialize();
 
                 switch (config.Job.OperationType)
                 {
                     case AnyJobOperationType.Add:
                         Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
-                        if (!PKCS12Store.DoesStoreExist())
+                        if (!pkcs12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
+                            throw new PKCS12Exception($"Certificate store {pkcs12Store.StorePath + pkcs12Store.StoreFileName} does not exist on server {pkcs12Store.Server}.");
                         }
                         else
                         {
-                            PKCS12Store.AddCertificate(config.Job.Alias, config.Job.EntryContents, config.Job.Overwrite, config.Job.PfxPassword);
+                            pkcs12Store.AddCertificate(config.Job.Alias, config.Job.EntryContents, config.Job.Overwrite, config.Job.PfxPassword);
                         }
                         break;
 
                     case AnyJobOperationType.Remove:
                         Logger.Debug($"Begin Delete Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
-                        if (!PKCS12Store.DoesStoreExist())
+                        if (!pkcs12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} does not exist on server {PKCS12Store.Server}.");
+                            throw new PKCS12Exception($"Certificate store {pkcs12Store.StorePath + pkcs12Store.StoreFileName} does not exist on server {pkcs12Store.Server}.");
                         }
                         else
                         {
-                            PKCS12Store.DeleteCertificateByAlias(config.Job.Alias);
+                            pkcs12Store.DeleteCertificateByAlias(config.Job.Alias);
                         }
                         break;
 
                     case AnyJobOperationType.Create:
                         Logger.Debug($"Begin Create Operation for {config.Store.StorePath} on {config.Store.ClientMachine}.");
-                        if (PKCS12Store.DoesStoreExist())
+                        if (pkcs12Store.DoesStoreExist())
                         {
-                            throw new PKCS12Exception($"Certificate store {PKCS12Store.StorePath + PKCS12Store.StoreFileName} already exists.");
+                            throw new PKCS12Exception($"Certificate store {pkcs12Store.StorePath + pkcs12Store.StoreFileName} already exists.");
                         }
                         else
                         {
-                            PKCS12Store.CreateCertificateStore(config.Store.StorePath, config.Store.StorePassword);
+                            dynamic properties = JsonConvert.DeserializeObject(config.Store.Properties.ToString());
+                            string linuxFilePermissions = properties.linuxFilePermissionsOnStoreCreation == null || string.IsNullOrEmpty(properties.linuxFilePermissionsOnStoreCreation.Value) ?
+                                ApplicationSettings.DefaultLinuxPermissionsOnStoreCreation :
+                                properties.linuxFilePermissionsOnStoreCreation.Value;
+
+                            pkcs12Store.CreateCertificateStore(config.Store.StorePath, config.Store.StorePassword);
                         }
                         break;
 
@@ -95,7 +100,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             }
             finally
             {
-                PKCS12Store.Terminate();
+                pkcs12Store.Terminate();
             }
 
             return new AnyJobCompleteInfo() { Status = 2, Message = "Successful" };

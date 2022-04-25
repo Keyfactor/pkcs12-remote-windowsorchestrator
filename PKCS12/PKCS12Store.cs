@@ -72,7 +72,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             if (ServerType == ServerTypeEnum.Linux)
                 SSH = new SSHHandler(Server, ServerId, ServerPassword);
             else
-                SSH = new WinRMHandler(Server);
+                SSH = new WinRMHandler(Server, ServerId, ServerPassword);
 
             SSH.Initialize();
         }
@@ -167,9 +167,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             }
         }
 
-        internal void CreateCertificateStore(string storePath, string storePassword)
+        internal void CreateCertificateStore(string storePath, string linuxFilePermissions)
         {
-            SSH.CreateEmptyStoreFile(storePath);
+            SSH.CreateEmptyStoreFile(storePath, linuxFilePermissions);
         }
 
         internal void AddCertificate(string alias, string certificateEntry, bool overwrite, string pfxPassword)

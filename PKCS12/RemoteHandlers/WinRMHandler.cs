@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Net;
 using System.Text;
 
 namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
@@ -20,17 +21,23 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
         private const string IGNORED_ERROR3 = "certificate was added to keystore";
 
         private Runspace runspace { get; set; }
+        private WSManConnectionInfo connectionInfo { get; set; }
 
-        internal WinRMHandler(string server)
+        internal WinRMHandler(string server, string serverLogin, string serverPassword)
         {
             Server = server;
+            connectionInfo = new WSManConnectionInfo(new System.Uri($"{Server}/wsman"));
+            if (!string.IsNullOrEmpty(serverLogin))
+            {
+                connectionInfo.Credential = new PSCredential(serverLogin, new NetworkCredential(serverLogin, serverPassword).SecurePassword);
+            }
         }
 
         public override void Initialize()
         {
             try
             {
-                runspace = RunspaceFactory.CreateRunspace(new WSManConnectionInfo(new System.Uri($"{Server}/wsman")));
+                runspace = RunspaceFactory.CreateRunspace(connectionInfo);
                 runspace.Open();
             }
 
@@ -184,7 +191,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             return RunCommandBinary($@"Get-Content -Path ""{path}"" -Encoding Byte -Raw");
         }
 
-        public override void CreateEmptyStoreFile(string path)
+        public override void CreateEmptyStoreFile(string path, string linuxFilePermissions)
         {
             RunCommand($@"Out-File -FilePath ""{path}""", null, false, null);
         }

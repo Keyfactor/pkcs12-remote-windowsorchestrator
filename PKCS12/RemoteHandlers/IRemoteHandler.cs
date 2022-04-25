@@ -23,7 +23,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 
         byte[] DownloadCertificateFile(string path);
 
-        void CreateEmptyStoreFile(string path);
+        void CreateEmptyStoreFile(string path, string linuxFilePermissions);
 
         bool DoesFileExist(string path);
     }
