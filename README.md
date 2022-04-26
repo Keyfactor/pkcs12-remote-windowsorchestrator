@@ -140,7 +140,7 @@ As a configuration step, you must modify the config.json file, found in the plug
 
 &quot;SeparateUploadFilePath&quot;: &quot;/path/to/upload/folder/&quot;,
 
-&quot;DefaultLinuxPermissionsOnStoreCreation&quot;: &quot;600@quot; 
+&quot;DefaultLinuxPermissionsOnStoreCreation&quot;: &quot;600&@quot; 
 
 Modify the three values as appropriate (all must be present regardless of Linux or Windows server orchestration):
 
