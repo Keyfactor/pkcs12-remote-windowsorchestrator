@@ -57,6 +57,8 @@ The PKCS12 Windows AnyAgent has been tested against Keyfactor Windows Orchestrat
 In Keyfactor Command create a new Certificate Store Type similar to the one below:
 
 ![](Images/image1.png)
+![](Images/image9.png)
+![](Images/image10.png)
 
 - **Name** – Required. The display name of the new Certificate Store Type
 - **Short Name** – Required. **MUST** be &quot;PKCS12&quot;
