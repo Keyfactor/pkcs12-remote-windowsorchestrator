@@ -140,6 +140,8 @@ As a configuration step, you must modify the config.json file, found in the plug
 
 &quot;SeparateUploadFilePath&quot;: &quot;/path/to/upload/folder/&quot;,
 
+&quot;DefaultLinuxPermissionsOnStoreCreation&quot;: &quot;600@quot; 
+
 Modify the three values as appropriate (all must be present regardless of Linux or Windows server orchestration):
 
 **UseSudo** (Linux only) - to determine whether to prefix certain Linux command with "sudo". This can be very helpful in ensuring that the user id running commands ssh uses "least permissions necessary" to process each task. Setting this value to "Y" will prefix all Linux commands with "sudo" with the expectation that the command being executed on the orchestrated Linux server will look in the sudoers file to determine whether the logged in ID has elevated permissions for that specific command. For orchestrated Windows servers, this setting has no effect. Setting this value to "N" will result in "sudo" not being added to Linux commands.
