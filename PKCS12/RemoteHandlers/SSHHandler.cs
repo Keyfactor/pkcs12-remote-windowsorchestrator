@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Renci.SshNet;
 
@@ -16,6 +17,8 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
 {
     class SSHHandler : BaseRemoteHandler
     {
+        private const string LINUX_PERMISSION_REGEXP = "^[0-7]{3}$";
+        
         private ConnectionInfo Connection { get; set; }
 
         private SshClient sshClient;
@@ -160,9 +163,10 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
             }
         }
 
-        public override void CreateEmptyStoreFile(string path)
+        public override void CreateEmptyStoreFile(string path, string linuxFilePermissions)
         {
-            RunCommand($"touch {path}", null, false, null);
+            AreLinuxPermissionsValid(linuxFilePermissions);
+            RunCommand($"install -m {linuxFilePermissions} /dev/null {path}", null, false, null);
             //using sudo will create as root. set useSudo to false 
             //to ensure ownership is with the credentials configued in the platform
         }
@@ -186,6 +190,13 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12.RemoteHandlers
                     client.Disconnect();
                 }
             }
+        }
+
+        public static void AreLinuxPermissionsValid(string permissions)
+        {
+            Regex regex = new Regex(LINUX_PERMISSION_REGEXP);
+            if (!regex.IsMatch(permissions))
+                throw new PKCS12Exception($"Invalid format for Linux file permissions.  This value must be exactly 3 digits long with each digit between 0-7 but found {permissions} instead.");
         }
 
         private void SplitStorePathFile(string pathFileName, out string path, out string fileName)
