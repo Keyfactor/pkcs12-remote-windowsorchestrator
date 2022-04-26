@@ -105,7 +105,7 @@ Open the Keyfactor Windows Agent Configuration Wizard and perform the tasks as i
 
 Navigate to Certificate Locations =\> Certificate Stores within Keyfactor Command to add a PKCS12 certificate store. Below are the values that should be entered.
 
-![](Images/Image9.png)
+![](Images/image9.png)
 
 - **Category** – Required. The PKCS12 type name must be selected.
 - **Container** – Optional. Select a container if utilized.
