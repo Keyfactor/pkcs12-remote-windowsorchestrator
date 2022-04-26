@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Text;
 
 using Newtonsoft.Json;
 
@@ -10,6 +9,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         public static bool UseSudo { get; set; }
         public static bool UseSeparateUploadFilePath { get; set; }
         public static string SeparateUploadFilePath { get; set; }
+        public static string DefaultLinuxPermissionsOnStoreCreation { get; set; }
+
+        private const string DEFAULT_LINUX_PERMISSION_SETTING = "600";
 
         public static void Initialize(string currLocation)
         {
@@ -25,6 +27,8 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             }
 
             dynamic jsonContents = JsonConvert.DeserializeObject(configContents);
+
+            DefaultLinuxPermissionsOnStoreCreation = jsonContents.DefaultLinuxPermissionsOnStoreCreation == null ? DEFAULT_LINUX_PERMISSION_SETTING : jsonContents.DefaultLinuxPermissionsOnStoreCreation.Value;
 
             ValidateConfig(jsonContents);
 
