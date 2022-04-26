@@ -69,6 +69,7 @@ In Keyfactor Command create a new Certificate Store Type similar to the one belo
 - **PFX Password Style** – Default
 - **Job Types** – Create, Inventory, Add, and Remove are the 4 job types implemented by this AnyAgent
 - **Management Job Custom Fields** - Keep blank.
+- **Linux File Permissions on Store Creation** - Optional.  Overrides the optional config.json DefaultLinuxPermissionsOnStoreCreation setting (see section 4 below) for a specific certificate store.  This value will set the file permissions (Linux only) of a new certificate store created via a Management-Create job.  If this parameter is not added or added but not set, the permissions used will be derived from the DefaultLinuxPermissionsOnStoreCreation setting. 
 
 **2. Register the PKCS12 AnyAgent with Keyfactor**
 
@@ -118,11 +119,12 @@ Navigate to Certificate Locations =\> Certificate Stores within Keyfactor Comman
   
   - PAM provider information to pass the UserId/Password or UserId/SSH private key credentials
   
-When setting up a Windows server, the format of the machine name must be – [http://_ServerName:5985](http://ServerName:5985/), where &quot;5985&quot; is the WinRM port number. 5985 is the standard, but if your organization uses a different, use that.  The credentials used will be the Keyfactor Command service account.  Because of this, for Windows orchestrated servers, setting an additional set of credentials is not necessary.  **However, it is required that the *Change Credentials* link still be clicked on and the resulting dialog closed by clicking OK.**
+When setting up a Windows server, the format of the machine name must be – http://ServerName:5985, where &quot;5985&quot; is the WinRM port number. 5985 is the standard, but if your organization uses a different port, use that.  The Keyfactor Command service account will be used if the credentials are left blank.  **However, if you choose to not enter credentials and use the Keyfactor Command service account, it is required that the *Change Credentials* link still be clicked on and the resulting dialog closed by clicking OK.**
   
 - **Store Path** – Required. The FULL PATH and file name of the pkcs12 certificate store being managed. File paths on Linux servers will always begin with a &quot;/&quot;. Windows servers will always begin with the drive letter, colon, and backslash, such as &quot;c:\\&quot;.  Valid characters for Linux store paths include any alphanumeric character, space, forward slash, hyphen, underscore, and period. For Windows servers, the aforementioned characters as well as a colon and backslash.
 - **Orchestrator** – Select the orchestrator you wish to use to manage this store
-- **Store Password** – Set the store password or set no password after clicking the supplied button
+- **Store Password** – Required. Set the store password or set no password after clicking the supplied button
+- **Linux File Permissions on Store Creation** - Optional (Linux only). Set the Linux file permissions you wish to be set when creating a new physical certificate store via checking Create Certificate Store above.  This value must be 3 digits all betwwen 0-7.
 - **Inventory Schedule** – Set a schedule for running Inventory jobs or none, if you choose not to schedule Inventory at this time.
 
 
@@ -145,3 +147,5 @@ Modify the three values as appropriate (all must be present regardless of Linux 
 **UseSeparateUploadFilePath** (Linux only) – When adding a certificate to a PKCS12 certificate store, the AnyAgent must upload the certificate being deployed to the server where the certificate store resides. Setting this value to &quot;Y&quot; looks to the next setting, SeparateUploadFilePath, to determine where this file should be uploaded. Set this value to &quot;N&quot; to use the same path where the certificate store being managed resides. The certificate file uploaded to either location will be removed at the end of the process.
 
 **SeparateUploadFilePath** (Linux only) – Only used when UseSeparateUploadFilePath is set to &quot;Y&quot;. Set this to the path you wish to use as the location to upload and later remove certificates to be added to the PKCS12 certificate store being maintained.
+
+**DefaultLinuxPermissionsOnStoreCreation** (Linux only) - Optional.  Value must be 3 digits all between 0-7.  The Linux file permissions that will be set on a new certificate store created via a Management Create job.  This value will be used for all certificate stores managed by this orchestrator instance unless overridden by the optional "Linux File Permissions on Store Creation" custom parameter setting on a specific certificate store.  If "Linux File Permissions on Store Creation" and DefaultLinuxPermissionsOnStoreCreation are not set, a default permission of 600 will be used.
