@@ -86,7 +86,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
                                 ApplicationSettings.DefaultLinuxPermissionsOnStoreCreation :
                                 properties.linuxFilePermissionsOnStoreCreation.Value;
 
-                            pkcs12Store.CreateCertificateStore(config.Store.StorePath, config.Store.StorePassword);
+                            pkcs12Store.CreateCertificateStore(config.Store.StorePath, linuxFilePermissions);
                         }
                         break;
 
