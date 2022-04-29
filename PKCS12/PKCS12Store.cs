@@ -8,9 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using Newtonsoft.Json;
@@ -60,6 +59,12 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             StorePassword = storePassword;
             ServerType = StorePath.Substring(0, 1) == "/" ? ServerTypeEnum.Linux : ServerTypeEnum.Windows;
             UploadFilePath = ApplicationSettings.UseSeparateUploadFilePath && ServerType == ServerTypeEnum.Linux ? ApplicationSettings.SeparateUploadFilePath : StorePath;
+
+            if (!IsStorePathValid())
+            {
+                string partialMessage = ServerType == ServerTypeEnum.Windows ? @"'\', ':', " : string.Empty;
+                throw new PKCS12Exception($"PKCS12 store path {storeFileAndPath} is invalid.  Only alphanumeric, '.', '/', {partialMessage}'-', and '_' characters are allowed in the store path.");
+            }
         }
 
         internal void Initialize()
@@ -67,7 +72,7 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             if (ServerType == ServerTypeEnum.Linux)
                 SSH = new SSHHandler(Server, ServerId, ServerPassword);
             else
-                SSH = new WinRMHandler(Server);
+                SSH = new WinRMHandler(Server, ServerId, ServerPassword);
 
             SSH.Initialize();
         }
@@ -162,9 +167,9 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
             }
         }
 
-        internal void CreateCertificateStore(string storePath, string storePassword)
+        internal void CreateCertificateStore(string storePath, string linuxFilePermissions)
         {
-            SSH.CreateEmptyStoreFile(storePath);
+            SSH.CreateEmptyStoreFile(storePath, linuxFilePermissions);
         }
 
         internal void AddCertificate(string alias, string certificateEntry, bool overwrite, string pfxPassword)
@@ -240,6 +245,12 @@ namespace Keyfactor.Extensions.Orchestrator.PKCS12
         internal bool DoesStoreExist()
         {
             return SSH.DoesFileExist(StorePath + StoreFileName);
+        }
+
+        internal bool IsStorePathValid()
+        {
+            Regex regex = new Regex(ServerType == ServerTypeEnum.Linux ? $@"^[\d\s\w-_/.]*$" : $@"^[\d\s\w-_/.:\\\\]*$");
+            return regex.IsMatch(StorePath + StoreFileName);
         }
 
         private void SplitStorePathFile(string pathFileName)
