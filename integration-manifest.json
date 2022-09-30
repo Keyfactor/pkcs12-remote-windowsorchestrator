@@ -3,6 +3,8 @@
   "integration_type": "windows-orchestrator",
   "name": "Remote PKCS12",
   "status": "production",
+  "update_catalog": true,
   "link_github": true,
+  "support_level": "kf-supported",
   "description": "The PKCS12 Windows AnyAgent allows a user to inventory and manage (both add and remove) PKCS12 certificate stores on both Windows and Linux servers."
 }

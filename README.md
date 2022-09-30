@@ -14,6 +14,20 @@ Note that in Keyfactor Version 9, the Windows Orchestrator have been replaced by
 
 ---
 
+
+## Support for Remote PKCS12
+
+Remote PKCS12 is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
+
+###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+___
+
+
+
+
+
+---
+
 # Remote PKCS12
 ## windows-orchestrator
 
